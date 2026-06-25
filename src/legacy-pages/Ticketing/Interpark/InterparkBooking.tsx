@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Box, HStack, Text, Badge, VStack, Heading, Grid, Button, Image, useToast, IconButton, Modal, ModalOverlay, ModalContent, ModalBody, Divider } from "@chakra-ui/react";
+import { Box, HStack, Text, Badge, VStack, Heading, Grid, Button, Image, IconButton, Modal, ModalOverlay, ModalContent, ModalBody, Divider } from "@chakra-ui/react";
+import { useToast } from "@/hooks/useToast";
 import { X, ArrowLeft, XCircle } from "lucide-react";
 import { useSetRecoilState } from "recoil";
 import { bookingResultState } from "../../../Atom/bookingResultState";
@@ -186,6 +187,11 @@ const InterparkBooking = () => {
   useEffect(() => {
     detailedSeatsRef.current = detailedSeats;
   }, [detailedSeats]);
+
+  const phaseRef = useRef(phase);
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   const [showPuzzleOverlay, setShowPuzzleOverlay] = useState<boolean>(false);
   const [pendingAction, setPendingAction] = useState<(() => Promise<void> | void) | null>(null);
@@ -762,6 +768,7 @@ const InterparkBooking = () => {
 
         setTimeout(() => {
           if (currentRefreshId !== lastRefreshIdRef.current) return;
+          if (phaseRef.current !== "seat") return; // Keep selection on success/fail/pricing!
           
           // Clear selectedSeat state if the selected seat disappeared!
           // We can check if selectedSeat matches seatInfo
@@ -802,7 +809,7 @@ const InterparkBooking = () => {
       });
     };
 
-    if (nextCount > 0 && nextCount % 10 === 0) {
+    if (nextCount > 0 && nextCount % 20 === 0) {
       setPendingAction(() => performRefresh);
       setShowPuzzleOverlay(true);
     } else {
@@ -1178,8 +1185,8 @@ const InterparkBooking = () => {
             엔피아파크 티켓 예매 [연습]
           </Text>
           <HStack spacing={3}>
-            <Badge colorScheme={mode === "jaehyun" ? "purple" : mode === "nboom" ? "red" : "blue"} variant="solid" px={2} py={0.5} rounded="md">
-              {mode === "jaehyun" ? "대환장 모드" : mode === "nboom" ? "엔붐온 모드" : "일반 모드"}
+            <Badge colorScheme={mode === "jaehyun" ? "purple" : mode === "nboom" ? "red" : mode === "cancel" ? "teal" : "blue"} variant="solid" px={2} py={0.5} rounded="md">
+              {mode === "jaehyun" ? "대환장 모드" : mode === "nboom" ? "엔붐온 모드" : mode === "cancel" ? "취켓팅 모드" : "일반 모드"}
             </Badge>
             <Box
               as="button"
@@ -1463,7 +1470,7 @@ const InterparkBooking = () => {
                     <VStack align="end" spacing={1}>
                       <Text fontSize="11px" color="gray.400" fontWeight="bold">MODE</Text>
                       <Badge
-                        colorScheme={mode === "jaehyun" ? "purple" : mode === "nboom" ? "red" : "blue"}
+                        colorScheme={mode === "jaehyun" ? "purple" : mode === "nboom" ? "red" : mode === "cancel" ? "teal" : "blue"}
                         variant="solid"
                         px={2.5}
                         py={0.5}
@@ -1471,7 +1478,7 @@ const InterparkBooking = () => {
                         fontSize="11px"
                         fontWeight="bold"
                       >
-                        {mode === "jaehyun" ? "대환장 모드 🤪" : mode === "nboom" ? "엔붐온 모드 ⚡" : "일반 모드 🔵"}
+                        {mode === "jaehyun" ? "대환장 모드 🤪" : mode === "nboom" ? "엔붐온 모드 ⚡" : mode === "cancel" ? "취켓팅 모드 🟢" : "일반 모드 🔵"}
                       </Badge>
                     </VStack>
                   </Grid>
@@ -1859,13 +1866,13 @@ const InterparkBooking = () => {
                     <VStack align="end" spacing={1}>
                       <Text fontSize="11px" color="gray.400" fontWeight="bold">MODE</Text>
                       <Badge
-                        colorScheme={mode === "jaehyun" ? "purple" : mode === "nboom" ? "red" : "blue"}
+                        colorScheme={mode === "jaehyun" ? "purple" : mode === "nboom" ? "red" : mode === "cancel" ? "teal" : "blue"}
                         variant="solid"
                         px={2.5}
                         py={0.5}
                         rounded="md"
                       >
-                        {mode === "jaehyun" ? "대환장" : mode === "nboom" ? "엔붐온" : "일반"}
+                        {mode === "jaehyun" ? "대환장" : mode === "nboom" ? "엔붐온" : mode === "cancel" ? "취켓팅" : "일반"}
                       </Badge>
                     </VStack>
                   </Grid>
